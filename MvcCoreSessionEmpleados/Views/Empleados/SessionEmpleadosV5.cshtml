@@ -1,0 +1,53 @@
+﻿@model List<Empleado>
+
+@{
+    //necesitamos session en la vista para comprobar sus datos
+    List<int> ids = Context.Session.GetObject<List<int>>("IDSEMPLEADOS");
+
+}
+
+<h1 style="color:cadetblue">
+    Empleados Session V5
+</h1>
+
+<p>
+    <a asp-controller="Empleados"
+       asp-action="EmpleadosAlmacenadosV5">
+        Empleados almacenados V5
+    </a>
+</p>
+
+<h3 style="color:lightblue">@ViewData["MENSAJE"]</h3>
+<ul class="list-group">
+    @foreach (Empleado empleado in Model)
+    {
+        <li class="list-group-item list-group-item-warning">
+            @empleado.Apellido
+            @if (ids == null)
+            {
+                //no hay session
+                <a asp-controller="Empleados"
+                   asp-action="SessionEmpleadosV5" class="btn btn-dark"
+                   asp-route-idempleado="@empleado.IdEmpleado">
+                    Almacenar empleado
+                </a>
+            }
+            else
+            {
+                //buscamos si el empleado que estamos recorriendo esta en la lista
+                if (ids.Contains(empleado.IdEmpleado))
+                {
+                       <img src="~/images/vaca.jpg" style="width:50px"/>
+                }
+                else
+                {
+                    <a asp-controller="Empleados"
+                       asp-action="SessionEmpleadosV5" class="btn btn-dark"
+                       asp-route-idempleado="@empleado.IdEmpleado">
+                        Almacenar empleado
+                    </a>
+                }
+            }
+        </li>
+    }
+</ul>
