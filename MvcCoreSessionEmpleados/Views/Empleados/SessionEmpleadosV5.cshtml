@@ -3,17 +3,33 @@
 @{
     //necesitamos session en la vista para comprobar sus datos
     List<int> ids = Context.Session.GetObject<List<int>>("IDSEMPLEADOS");
-
+    List<Empleado> favs = cache.Get<List<Empleado>>("FAVORITOS");
 }
 
 <h1 style="color:cadetblue">
     Empleados Session V5
 </h1>
 
+@if (favs != null)
+{
+    <h3>Empleados Favs: @favs.Count</h3>
+}
+else
+{
+    <h3>Empleados Favs: 0</h3>
+}
+
 <p>
     <a asp-controller="Empleados"
        asp-action="EmpleadosAlmacenadosV5">
         Empleados almacenados V5
+    </a>
+</p>
+
+<p>
+    <a asp-controller="Empleados"
+       asp-action="Favoritos">
+        Empleados favoritos
     </a>
 </p>
 
@@ -23,6 +39,12 @@
     {
         <li class="list-group-item list-group-item-warning">
             @empleado.Apellido
+            <a asp-controller="Empleados"
+               asp-action="SessionEmpleadosV5" class="btn btn-dark"
+               asp-route-idfavorito="@empleado.IdEmpleado">
+                Favorito
+            </a>
+
             @if (ids == null)
             {
                 //no hay session

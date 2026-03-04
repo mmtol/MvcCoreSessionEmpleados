@@ -1,0 +1,43 @@
+﻿@{
+    List<Empleado> favs = cache.Get<List<Empleado>>("FAVORITOS");
+}
+
+<h1>Empleados favoritos</h1>
+
+<p>
+    <a asp-controller="Empleados"
+       asp-action="SessionEmpleadosV5">
+        Volver a empleados V5
+    </a>
+</p>
+
+@if (favs != null)
+{
+    <table class="table table-primary">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Apellido</th>
+                <th>Oficio</th>
+                <th>Salario</th>
+                <th>Departamento</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in favs)
+            {
+                <tr>
+                    <td>@item.IdEmpleado</td>
+                    <td>@item.Apellido</td>
+                    <td>@item.Oficio</td>
+                    <td>@item.Salario</td>
+                    <td>@item.IdDepartamento</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h2>No hay empleados favoritos</h2>
+}

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MvcCoreSessionEmpleados.Extensions;
 using MvcCoreSessionEmpleados.Models;
 using MvcCoreSessionEmpleados.Repositories;
@@ -8,10 +9,12 @@ namespace MvcCoreSessionEmpleados.Controllers
     public class EmpleadosController : Controller
     {
         private RepositoryEmpleados repo;
+        private IMemoryCache cache;
 
-        public EmpleadosController(RepositoryEmpleados repo)
+        public EmpleadosController(RepositoryEmpleados repo, IMemoryCache cache)
         {
             this.repo = repo;
+            this.cache = cache;
         }
 
         public async Task<IActionResult> SessionSalarios(int? salario)
@@ -196,8 +199,28 @@ namespace MvcCoreSessionEmpleados.Controllers
         }
 
         public async Task<IActionResult> SessionEmpleadosV5
-            (int? idempleado)
+            (int? idempleado, int? idfavorito)
         {
+            if (idfavorito != null)
+            {
+                //como estoy almacenando en cache, vamos a guardar los obj en lugar de los ids
+                List<Empleado> favs;
+                if (cache.Get("FAVORITOS") == null)
+                {
+                    //no existe nada en cache
+                    favs = new List<Empleado>();
+                }
+                else
+                {
+                    //recuperamos el cache
+                    favs = cache.Get<List<Empleado>>("FAVORITOS");
+                }
+                //buscamos al empleado para guardarlo
+                Empleado fav = await this.repo.FindEmpleadoAsync(idfavorito.Value);
+                favs.Add(fav);
+                cache.Set("FAVORITOS", favs);
+            }
+
             if (idempleado != null)
             {
                 //ALMACENAMOS LO MINIMO...
@@ -226,22 +249,43 @@ namespace MvcCoreSessionEmpleados.Controllers
             return View(empleados);
         }
 
-        public async Task<IActionResult> EmpleadosAlmacenadosV5()
+        public async Task<IActionResult> EmpleadosAlmacenadosV5(int? ideliminar)
         {
             //RECUPERAMOS LA COLECCION DE SESSION
             List<int> idsEmpleados =
                 HttpContext.Session.GetObject<List<int>>("IDSEMPLEADOS");
             if (idsEmpleados == null)
             {
-                ViewData["MENSAJE"] = "No existen empleados en Session";
                 return View();
             }
             else
             {
+                //preguntamos si hemos reibido algun dato para eliminar
+                if (ideliminar != null)
+                {
+                    idsEmpleados.Remove(ideliminar.Value);
+                    //si no tenemos expleados en session, nuestra coleccion existe y se queda a 0
+                    //eliminamos session
+                    if (idsEmpleados.Count == 0)
+                    {
+                        HttpContext.Session.Remove("IDSEMPLEADOS");
+                    }
+                    else
+                    {
+                        //actualizamos session
+                        HttpContext.Session.SetObject("IDSEMPLEADOS", idsEmpleados);
+                    }
+                }
+
                 List<Empleado> empleados =
                     await this.repo.GetEmpleadosSessionAsync(idsEmpleados);
                 return View(empleados);
             }
+        }
+
+        public IActionResult Favoritos()
+        {
+            return View();
         }
     }
 }
