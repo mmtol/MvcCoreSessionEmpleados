@@ -39,11 +39,31 @@ else
     {
         <li class="list-group-item list-group-item-warning">
             @empleado.Apellido
-            <a asp-controller="Empleados"
-               asp-action="SessionEmpleadosV5" class="btn btn-dark"
-               asp-route-idfavorito="@empleado.IdEmpleado">
-                Favorito
-            </a>
+            
+            @if (favs == null)
+            {
+                <a asp-controller="Empleados"
+                   asp-action="SessionEmpleadosV5" class="btn btn-dark"
+                   asp-route-idfavorito="@empleado.IdEmpleado">
+                    Favorito
+                </a>
+            }
+            else
+            {
+                Empleado fav = favs.Find(z => z.IdEmpleado == empleado.IdEmpleado);
+                if (fav != null)
+                {
+                    <img src="~/images/gallina.jpg" style="width:50px" />
+                }
+                else
+                {
+                    <a asp-controller="Empleados"
+                       asp-action="SessionEmpleadosV5" class="btn btn-dark"
+                       asp-route-idfavorito="@empleado.IdEmpleado">
+                        Favorito
+                    </a>
+                }
+            }
 
             @if (ids == null)
             {
